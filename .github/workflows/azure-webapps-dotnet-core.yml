@@ -6,6 +6,7 @@ env:
     # set this to the name of your Azure Web App
   AZURE_WEBAPP_PACKAGE_PATH: "." # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: "6.0.x" # set this to the .NET Core version to use
+  VERSION_FILE_PATH: "version.txt" # set this to the path to your version file
 
 on:
   push:
@@ -26,6 +27,27 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+          
+      - name: Get version
+        run: |
+          VERSION=$(cat ${{ env.VERSION_FILE_PATH }})
+          MAJOR=$(echo $VERSION | cut -d'.' -f1)
+          MINOR=$(echo $VERSION | cut -d'.' -f2)
+          PATCH=$(echo $VERSION | cut -d'.' -f3)
+
+          if [ "${{ matrix.type }}" = "major" ]; then
+            ((MAJOR++))
+            MINOR=0
+            PATCH=0
+          elif [ "${{ matrix.type }}" = "minor" ]; then
+            ((MINOR++))
+            PATCH=0
+          else
+            ((PATCH++))
+          fi
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo $NEW_VERSION > ${{ env.VERSION_FILE_PATH }}
+          echo "::set-env name=NEW_VERSION::$NEW_VERSION"
 
       - name: Set up dependency caching for faster builds
         uses: actions/cache@v3
@@ -36,10 +58,10 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build --configuration Release /p:Version=$NEW_VERSION
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp --version-suffix=$NEW_VERSION
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
