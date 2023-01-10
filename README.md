@@ -38,6 +38,7 @@ git push origin develop
 7. Create a new ```release``` branch from ```develop``` and checkout to it:
 ```
 git checkout -b release/V1.0.0
+```
 
 8. Add a Git tag to the ```release``` branch (PS: youcan check the available tags using ``` git tag ```:
 ```
@@ -54,9 +55,3 @@ git merge --no-ff release/1.0.0
 ```
 git push origin main
 ```
-
-
-
-
-
-
