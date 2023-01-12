@@ -56,10 +56,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
       - name: Build with dotnet
-        run: dotnet build --configuration Release -p:Version=${{ steps.version-uat.outputs.version }}
+        run: dotnet build --configuration Release -p:Version=${{ steps.version.outputs.version-uat }}
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp -p:Version=${{ steps.version-uat.outputs.version }}
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp -p:Version=${{ steps.version.outputs.version-uat }}
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
@@ -94,4 +94,4 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.UAT_PUBLISH_PROFILE }}
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-          version: ${{ steps.version-uat.outputs.version_tag }}
+          version: ${{ steps.version.outputs.version_tag }}
