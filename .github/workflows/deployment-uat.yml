@@ -5,7 +5,6 @@ env:
     # set this to the name of your Azure Web App
   AZURE_WEBAPP_PACKAGE_PATH: "." # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: "6.0.x" # set this to the .NET Core version to use
-  PAT: "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"
 
 on:
   push:
@@ -35,11 +34,11 @@ jobs:
         run: echo "TAG_FORMAT=\${major}.\${minor}.\${patch}" >> $GITHUB_ENV
         
       - name: Bump version number
-        id: version-uat
+        id: version
         uses: paulhatch/semantic-version@v4.0.2
         with:
           # The prefix to use to identify tags
-          tag_prefix: "UAT-"
+          tag_prefix: "V"
           # A string which, if present in a git commit, indicates that a change represents a
           # major (breaking) change, supports regular expressions wrapped with '/'
           major_pattern: "(MAJOR)"
@@ -56,10 +55,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
       - name: Build with dotnet
-        run: dotnet build --configuration Release -p:Version=${{ steps.version-uat.outputs.version }}
+        run: dotnet build --configuration Release -p:Version=${{ steps.version.outputs.version }}
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp -p:Version=${{ steps.version-uat.outputs.version }}
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp -p:Version=${{ steps.version.outputs.version }}
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
@@ -68,7 +67,7 @@ jobs:
           path: ${{env.DOTNET_ROOT}}/myapp
           
       - name: Tag repository
-        run: git tag ${{ steps.version-uat.outputs.version_tag }}
+        run: git tag ${{ steps.version.outputs.version_tag }}
       - name: Push Tags
         run: git push --tags
 
@@ -94,4 +93,3 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.UAT_PUBLISH_PROFILE }}
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-          version: ${{ steps.version-uat.outputs.version_tag }}
