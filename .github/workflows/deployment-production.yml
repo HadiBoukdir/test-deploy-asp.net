@@ -1,9 +1,8 @@
 name: Build and deploy ASP.Net Core app to an Azure Web App
 
 env:
-  AZURE_WEBAPP_NAME:
-    test-deploy-aspnetcore
-    # set this to the name of your Azure Web App
+  AZURE_WEBAPP_NAME: test-deploy-aspnetcore
+  # set this to the name of your Azure Web App
   AZURE_WEBAPP_PACKAGE_PATH: "." # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: "6.0.x" # set this to the .NET Core version to use
 
@@ -20,12 +19,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@
+        with:
+          fetch-depth: 0
+          ref: main
+          token: ${{ secrets.REPO_TOKEN }}
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+          
+      - name: Set tag format
+        run: echo "TAG_FORMAT=\${major}.\${minor}.\${patch}" >> $GITHUB_ENV
+        
+      - name: Bump version number
+        id: version
+        uses: paulhatch/semantic-version@v4.0.2
+        with:
+          # The prefix to use to identify tags
+          tag_prefix: "V"
+          # A string which, if present in a git commit, indicates that a change represents a
+          # major (breaking) change, supports regular expressions wrapped with '/'
+          major_pattern: "(MAJOR)"
+          # Same as above except indicating a minor change, supports regular expressions wrapped with '/'
+          minor_pattern: "(MINOR)"
+          # A string to determine the format of the version output
+          format: ${{ env.TAG_FORMAT }}
 
       - name: Set up dependency caching for faster builds
         uses: actions/cache@v3
@@ -36,16 +56,22 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build --configuration Release -p:Version=${{ steps.version.outputs.version }}
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp -p:Version=${{ steps.version.outputs.version }}
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
+          
+      - name: Tag repository
+        run: git tag ${{ steps.version.outputs.version_tag }}
+        
+      - name: Push Tags
+        run: git push --tags
 
   deploy:
     permissions:
