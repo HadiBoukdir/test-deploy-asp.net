@@ -61,6 +61,11 @@ jobs:
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
+          
+      - name: Tag repository
+        run: git tag ${{ steps.version.outputs.version_tag }}
+      - name: Push Tags
+        run: git push --tags
 
   deploy:
     permissions:
