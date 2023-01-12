@@ -63,13 +63,11 @@ jobs:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
           
-      - name: Use PAT to authenticate
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-          
       - name: Tag repository
         run: git tag ${{ steps.version.outputs.version_tag }}
       - name: Push Tags
+        env:
+            GITHUB_TOKEN: ${{ secrets.PAT }}
         run: git push --tags
 
   deploy:
