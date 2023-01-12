@@ -17,21 +17,7 @@ public class IndexModel : PageModel
     public IList<string> Tags { get; set; }
     public async Task OnGetAsync()
     {
-        using (var client = new HttpClient())
-        {
-            client.DefaultRequestHeaders.Add("User-Agent", "MyApp");
-            var response = await client.GetAsync("https://api.github.com/repos/hadiboukdir/test-deploy-asp.net/tags");
-            if (response.IsSuccessStatusCode)
-            {
-                var json = await response.Content.ReadAsStringAsync();
-                Tags = JArray.Parse(json)
-                    .Select(x => x["name"].ToString())
-                    .ToList();
-
-                LatestTag = Tags.OrderByDescending(x => x).FirstOrDefault();
-            }
-
-        }
+        LatestTag = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
     }
 
 }
