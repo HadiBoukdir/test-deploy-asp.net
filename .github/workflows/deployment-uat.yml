@@ -24,7 +24,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: uat
-          token: $
+          token: ${{ secrets.REPO_TOKEN }}
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v2
