@@ -38,9 +38,10 @@
 
 <footer class="border-top footer text-muted">
     <div class="container">
-        &copy; 2023 - Welcome to our Web App -
-
-        <a asp-area="" asp-page="/Privacy">@Model.LatestTag</a>
+        <div class="d-flex align-items-center justify-content-between">
+            <p>&copy; 2023 - Welcome to our Web App</p>
+            <p>V @Model.LatestTag</p>
+        </div>
     </div>
 </footer>
 
