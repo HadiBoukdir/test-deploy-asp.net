@@ -64,9 +64,9 @@ jobs:
           for folder in "${FOLDERS[@]}"; do
             git diff HEAD~1 HEAD --name-only -- $folder/*
             if [ $folder == "TestDeployApp/pages/centology" ]; then
-              echo "::set-env name=CENTOLOGY_VERSION::${{ steps.version.outputs.version }}"
+              echo "CENTOLOGY_VERSION=${{ steps.version.outputs.version }}" >> $GITHUB_ENV
             elif [ $folder == "TestDeployApp/pages/sentinel" ]; then
-              echo "::set-env name=SENTINEL_VERSION::${{ steps.version.outputs.version }}"
+              echo "SENTINEL_VERSION=${{ steps.version.outputs.version }}" >> $GITHUB_ENV
             fi
           done
       
