@@ -39,6 +39,14 @@ jobs:
             echo "Sentinel has been updated"
           fi
           
+      - name: Centology Project
+        if: steps.check.outputs.contains('/centology')
+        run: dotnet build pages/project1 --configuration Release
+
+      - name: Build project2
+        if: steps.check.outputs.contains('/sentinel')
+        run: dotnet build pages/project2 --configuration Release
+          
       - name: Set tag format
         run: echo "TAG_FORMAT=\${major}.\${minor}.\${patch}" >> $GITHUB_ENV
         
@@ -55,6 +63,14 @@ jobs:
           minor_pattern: "(MINOR)"
           # A string to determine the format of the version output
           format: ${{ env.TAG_FORMAT }}
+          
+      - name: Update version
+        if: steps.check.outputs.contains('/centology')
+        env:
+          UATCENTOLOGYVERSIONTAG: steps.version.outputs.version
+        
+      - name: Print version
+        run: echo $CENTOLOGY_VERSION
 
       - name: Set up dependency caching for faster builds
         uses: actions/cache@v3
