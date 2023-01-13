@@ -30,6 +30,15 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           
+      - name: Check which project has been updated
+        run: |
+          if git diff --name-only HEAD^ | grep -q "/centology"; then
+            echo "Centology has been updated"
+          fi
+          if git diff --name-only HEAD^ | grep -q "/sentinel"; then
+            echo "Sentinel has been updated"
+          fi
+          
       - name: Set tag format
         run: echo "TAG_FORMAT=\${major}.\${minor}.\${patch}" >> $GITHUB_ENV
         
