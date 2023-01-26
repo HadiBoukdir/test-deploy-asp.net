@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json.Linq;
 using System.Reflection;
 
-namespace TestDeployApp.Pages;
+namespace TestDeployApp.Pages.centology;
 
 public class IndexModel : PageModel
 {

@@ -5,6 +5,9 @@ env:
     # set this to the name of your Azure Web App
   AZURE_WEBAPP_PACKAGE_PATH: "." # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: "6.0.x" # set this to the .NET Core version to use
+  FOLDERS_TO_CHECK: "TestDeployApp/pages/centology,TestDeployApp/pages/sentinel"
+  CENTOLOGY_VERSION: ""
+  SENTINEL_VERSION: ""
 
 on:
   push:
@@ -28,7 +31,7 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: ${{ env.DOTNET_VERSION }}     
           
       - name: Set tag format
         run: echo "TAG_FORMAT=\${major}.\${minor}.\${patch}" >> $GITHUB_ENV
@@ -54,6 +57,19 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
+            
+      - name: Check for changes in all Folders
+        run: |
+          IFS=',' read -ra FOLDERS <<< "$FOLDERS_TO_CHECK"
+          for folder in "${FOLDERS[@]}"; do
+            git diff HEAD~1 HEAD --name-only -- $folder/*
+            if [ $folder == "TestDeployApp/pages/centology" ]; then
+              echo "CENTOLOGY_VERSION=${{ steps.version.outputs.version }}" >> $GITHUB_ENV
+            elif [ $folder == "TestDeployApp/pages/sentinel" ]; then
+              echo "SENTINEL_VERSION=${{ steps.version.outputs.version }}" >> $GITHUB_ENV
+            fi
+          done
+      
       - name: Build with dotnet
         run: dotnet build --configuration Release -p:Version=${{ steps.version.outputs.version }}
 
